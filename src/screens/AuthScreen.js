@@ -1,7 +1,11 @@
 import React from "react";
 import { Image, StyleSheet, View } from "react-native";
 import tw from "tailwind-react-native-classnames";
-import { ANDROID_OAUTH_KEY, IOS_OAUTH_KEY } from "@env";
+import {
+  ANDROID_OAUTH_KEY,
+  IOS_OAUTH_KEY,
+  ANDROID_OAUTH_KEY_LOCAL,
+} from "@env";
 import * as Google from "expo-google-app-auth";
 import { GoogleSocialButton } from "react-native-social-buttons";
 import firebase from "../firebase";
@@ -15,7 +19,7 @@ const AuthScreen = () => {
     try {
       const res = await Google.logInAsync({
         androidStandaloneAppClientId: ANDROID_OAUTH_KEY,
-        androidClientId: ANDROID_OAUTH_KEY,
+        androidClientId: ANDROID_OAUTH_KEY_LOCAL,
         iosClientId: IOS_OAUTH_KEY,
         scopes: ["profile", "email"],
       });

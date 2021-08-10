@@ -25,19 +25,23 @@ const AddCustomerModal = ({ visible, setVisible, fun }) => {
   };
   return (
     <Modal
-      // style={tw`h-full w-full  z-50 justify-center`}
-      animationType="slide"
+      animationType="fade"
       transparent={true}
       visible={visible}
       onRequestClose={() => setVisible(false)}
     >
-      <View
+      <TouchableOpacity
+        onPress={() => setVisible(false)}
         style={[
           tw`h-full w-full absolute justify-center items-center`,
           { backgroundColor: "rgba(0,0,0,0.6)" },
         ]}
       >
-        <View style={tw`w-11/12 rounded-lg bg-white`}>
+        <TouchableOpacity
+          onPress={null}
+          activeOpacity={1}
+          style={tw`w-11/12 rounded-lg bg-white z-20`}
+        >
           <TouchableOpacity
             style={tw`absolute right-4 top-4 z-10`}
             onPress={() => setVisible(false)}
@@ -78,8 +82,8 @@ const AddCustomerModal = ({ visible, setVisible, fun }) => {
           <View style={tw`mx-4 my-2 mb-4`}>
             <Button onPress={submitHandler} title="Submit" />
           </View>
-        </View>
-      </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 };

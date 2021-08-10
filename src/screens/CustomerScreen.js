@@ -19,7 +19,8 @@ import Loader from "../components/Loader";
 import AddButton from "../components/AddButton";
 import AddTransactionModal from "../components/AddTransactionModal";
 
-const db = firebase.firestore;
+const db = firebase.firestore,
+  storage = firebase.storage;
 
 const CustomerScreen = ({ route }) => {
   const { customerId, customerName } = route?.params,
@@ -92,7 +93,7 @@ const CustomerScreen = ({ route }) => {
     setGot(tGot);
   }, [trans]);
 
-  const addTransaction = (isGiving, amount, desc) => {
+  const addTransaction = (isGiving, amount, desc, url = "") => {
     setLoading(true);
     let amt = 0;
     if (isGiving) {
@@ -106,12 +107,12 @@ const CustomerScreen = ({ route }) => {
       timestamp: lastActivity,
       amount: amt,
       desc,
-      receipt: "",
+      receipt: url,
     });
     selfTransRef.set({
       timestamp: lastActivity,
       amount: -1 * amt,
-      receipt: "",
+      receipt: url,
       desc,
     });
     if (isGiving) {
@@ -156,6 +157,9 @@ const CustomerScreen = ({ route }) => {
           fun={addTransaction}
           visible={modalVisible}
           setVisible={setModalVisible}
+          transId={transRef?.id}
+          storage={storage}
+          setLoading={setLoading}
         />
       )}
       <FlatList
