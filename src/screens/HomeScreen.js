@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView, FlatList, View, Text, Alert } from "react-native";
+import { FAB } from "react-native-elements";
 import { useSelector } from "react-redux";
 import tw from "tailwind-react-native-classnames";
 import AddButton from "../components/AddButton";
@@ -78,7 +79,7 @@ const HomeScreen = () => {
         });
       setModalVisible(false);
       setLoading(false);
-      // // //ALL THIS IS NOW DONE USING CLOUD FUNCTIONS // // // // //
+      // // //ALL THIS WAS BEING DONE USING CLOUD FUNCTIONS // // // // //
       //                                                             //
       db().collection("users").doc(id).set({}, { merge: true });
       db()
@@ -104,6 +105,13 @@ const HomeScreen = () => {
         />
       )}
       <StatusBar style="light" />
+      <FAB
+        onPress={() => setModalVisible(true)}
+        title="Add Customer"
+        color="rgb(153,27,27)"
+        style={tw`z-10`}
+        placement="right"
+      />
       <FlatList
         ListHeaderComponent={() => (
           <View>
@@ -112,10 +120,6 @@ const HomeScreen = () => {
                 sent: userDoc?.sent || 0,
                 received: userDoc?.received || 0,
               }}
-            />
-            <AddButton
-              onPress={() => setModalVisible(true)}
-              text="Add Customer"
             />
           </View>
         )}

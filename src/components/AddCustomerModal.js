@@ -31,6 +31,7 @@ const AddCustomerModal = ({ visible, setVisible, fun }) => {
       onRequestClose={() => setVisible(false)}
     >
       <TouchableOpacity
+        activeOpacity={1}
         onPress={() => setVisible(false)}
         style={[
           tw`h-full w-full absolute justify-center items-center`,

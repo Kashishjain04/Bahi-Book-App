@@ -12,7 +12,7 @@ import { selectUser } from "../redux/slices/userSlice";
 import firebase from "../firebase";
 import Dashboard from "../components/Dashboard";
 import { useNavigation } from "@react-navigation/native";
-import { Avatar } from "react-native-elements";
+import { Avatar, FAB } from "react-native-elements";
 import tw from "tailwind-react-native-classnames";
 import TransactionListItem from "../components/TransactionListItem";
 import Loader from "../components/Loader";
@@ -162,14 +162,18 @@ const CustomerScreen = ({ route }) => {
           setLoading={setLoading}
         />
       )}
+      <FAB
+        onPress={() => setModalVisible(true)}
+        title="Add Transaction"
+        color="rgb(153,27,27)"
+        style={tw`z-10`}
+        placement="right"
+      />
       <FlatList
         ListHeaderComponent={() => (
           <View>
             <Dashboard data={{ sent: gave || 0, received: got || 0 }} />
-            <AddButton
-              text="Add Transaction"
-              onPress={() => setModalVisible(true)}
-            />
+            <AddButton text="Settle Up" onPress={() => setModalVisible(true)} />
           </View>
         )}
         ListHeaderComponentStyle={tw`mb-4`}
