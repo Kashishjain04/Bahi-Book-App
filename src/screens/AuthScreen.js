@@ -1,17 +1,17 @@
 import React from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { Image, View } from "react-native";
 import tw from "tailwind-react-native-classnames";
 import {
   ANDROID_OAUTH_KEY,
   IOS_OAUTH_KEY,
   ANDROID_OAUTH_KEY_LOCAL,
+  API_BASE_URL
 } from "@env";
 import * as Google from "expo-google-app-auth";
 import { GoogleSocialButton } from "react-native-social-buttons";
 import firebase from "../firebase";
 
 const auth = firebase.auth,
-  db = firebase.firestore,
   googleProvider = new auth.GoogleAuthProvider();
 
 const AuthScreen = () => {
@@ -29,13 +29,12 @@ const AuthScreen = () => {
           .signInWithCredential(cred)
           .then(({ additionalUserInfo }) => {
             if (additionalUserInfo?.isNewUser) {
-              db()
-                .collection("users")
-                .doc(additionalUserInfo?.profile?.email)
-                .set(
-                  { name: additionalUserInfo?.profile?.name },
-                  { merge: true }
-                );
+              fetch(`${API_BASE_URL}/api/createUser`, {
+                method: "POST",
+                body: JSON.stringify(additionalUserInfo?.profile),
+                headers: { "Content-Type": "application/json" },
+                crossDomain: true,
+              }).catch((err) => console.log(err));              
             }
           })
           .catch((err) => console.log(err));
@@ -65,5 +64,3 @@ const AuthScreen = () => {
 };
 
 export default AuthScreen;
-
-const styles = StyleSheet.create({});
