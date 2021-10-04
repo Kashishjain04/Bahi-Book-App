@@ -9,7 +9,7 @@ import CustomerListItem from '../components/CustomerListItem';
 import Dashboard from '../components/Dashboard';
 import Loader from '../components/Loader';
 import { selectUser } from '../redux/slices/userSlice';
-import { API_BASE_URL} from '@env';
+import { API_BASE_URL } from '@env';
 import { io } from 'socket.io-client';
 
 const HomeScreen = () => {
