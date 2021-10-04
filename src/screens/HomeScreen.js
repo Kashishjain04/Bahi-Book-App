@@ -4,23 +4,23 @@ import { SafeAreaView, FlatList, View, Text, Alert } from 'react-native';
 import { FAB } from 'react-native-elements';
 import { useSelector } from 'react-redux';
 import tw from 'tailwind-react-native-classnames';
-import AddButton from '../components/AddButton';
 import AddCustomerModal from '../components/AddCustomerModal';
 import CustomerListItem from '../components/CustomerListItem';
 import Dashboard from '../components/Dashboard';
 import Loader from '../components/Loader';
 import { selectUser } from '../redux/slices/userSlice';
-import { API_BASE_URL } from '@env';
+import { API_BASE_URL} from '@env';
 import { io } from 'socket.io-client';
 
 const HomeScreen = () => {
 	const user = useSelector(selectUser),
 		[userDoc, setUserDoc] = useState(null),
 		[customers, setCustomers] = useState([]),
-		[loading, setLoading] = useState(true),
+		[loading, setLoading] = useState(false),
+		[listLoading, setListLoading] = useState(true),
 		[modalVisible, setModalVisible] = useState(false);
 
-	useEffect(() => {
+	const loadData = () => {
 		const socket = io(API_BASE_URL);
 
 		socket.emit('userDoc', { user }, (err) => {
@@ -34,12 +34,20 @@ const HomeScreen = () => {
 			setLoading(true);
 			setUserDoc(data);
 			setLoading(false);
+			setListLoading(false);
 		});
 		socket.on('customersCol', ({ data }) => {
 			setLoading(true);
 			setCustomers(data);
 			setLoading(false);
+			setListLoading(false);
 		});
+
+		return socket;
+	};
+
+	useEffect(() => {
+		const socket = loadData();
 
 		return () => {
 			setLoading(true);
@@ -53,7 +61,7 @@ const HomeScreen = () => {
 			setLoading(true);
 			if (id === user?.email) {
 				setLoading(false);
-				Alert.alert("Can't add yourself as a customer!!");
+				Alert.alert("Can't add yourself as your friend!!");
 				return;
 			}
 			fetch(`${API_BASE_URL}/api/addCustomer`, {
@@ -74,7 +82,7 @@ const HomeScreen = () => {
 					if (res.error) {
 						Alert.alert(res.error || 'Something went wrong');
 					} else {
-						Alert.alert('Customer added successfully');
+						Alert.alert('Friend added successfully');
 					}
 				})
 				.catch((err) => {
@@ -83,7 +91,7 @@ const HomeScreen = () => {
 				.finally(() => {
 					setModalVisible(false);
 					setLoading(false);
-				});			
+				});
 		}
 	};
 
@@ -92,6 +100,7 @@ const HomeScreen = () => {
 			{loading && <Loader />}
 			{modalVisible && (
 				<AddCustomerModal
+					loading={loading}
 					fun={addCustomer}
 					visible={modalVisible}
 					setVisible={setModalVisible}
@@ -100,12 +109,27 @@ const HomeScreen = () => {
 			<StatusBar style='light' />
 			<FAB
 				onPress={() => setModalVisible(true)}
-				title='Add Customer'
+				title='Add Friend'
 				color='rgb(153,27,27)'
 				style={tw`z-10`}
 				placement='right'
 			/>
 			<FlatList
+				refreshing={listLoading}
+				onRefresh={() => {
+					setListLoading(true);
+					loadData();
+				}}
+				ListEmptyComponent={() => (
+					<View style={tw`flex flex-col h-64 justify-center`}>
+						<Text style={tw`text-gray-500 text-center text-2xl mb-3`}>
+							You don't have any Friend
+						</Text>
+						<Text style={tw`text-gray-500 text-center text-2xl`}>
+							Press <Text style={tw`text-red-700`}>Add Friend</Text> to add one
+						</Text>
+					</View>
+				)}
 				ListHeaderComponent={() => (
 					<View>
 						<Dashboard
@@ -117,7 +141,7 @@ const HomeScreen = () => {
 					</View>
 				)}
 				ItemSeparatorComponent={() => (
-					<View style={[tw`w-full bg-gray-300`, { height: 1 }]}></View>
+					<View style={[tw`w-full bg-gray-300`, { height: 1 }]} />
 				)}
 				overScrollMode='never'
 				ListHeaderComponentStyle={tw`mb-2`}

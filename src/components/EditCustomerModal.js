@@ -1,27 +1,26 @@
-import React, { useRef, useState } from 'react';
-import {
-	View,
-	Text,
-	Modal,
-	TextInput,
-	Alert,
-	TouchableOpacity,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Modal, TextInput, TouchableOpacity } from 'react-native';
 import { Icon, Button } from 'react-native-elements';
 import tw from 'tailwind-react-native-classnames';
 
-const AddCustomerModal = ({ visible, setVisible, fun, loading }) => {
-	const [id, setId] = useState(''),
-		[name, setName] = useState(''),
-		ref1 = useRef(null),
-		ref2 = useRef(null);
+const EditCustomerModal = ({
+	visible,
+	setVisible,
+	fun,
+	loading,
+	setLoading,
+}) => {
+	const [name, setName] = useState('');
+
+	useEffect(() => {
+		setLoading(true);
+		return setLoading(false);
+	}, []);
 
 	const submitHandler = () => {
-		if (id === '' || name === '') {
-			return Alert.alert('All the fields are required');
-		}
-		fun(id.toLowerCase(), name);
+		fun(name);
 	};
+
 	return (
 		<Modal
 			animationType='fade'
@@ -40,7 +39,7 @@ const AddCustomerModal = ({ visible, setVisible, fun, loading }) => {
 				<TouchableOpacity
 					onPress={null}
 					activeOpacity={1}
-					style={tw`w-11/12 rounded-lg bg-white z-20`}
+					style={tw`w-11/12 pb-4 rounded-lg bg-white`}
 				>
 					<TouchableOpacity
 						style={tw`absolute right-4 top-4 z-10`}
@@ -50,42 +49,27 @@ const AddCustomerModal = ({ visible, setVisible, fun, loading }) => {
 							<Icon type='feather' name='x' />
 						</Text>
 					</TouchableOpacity>
-					<Text
-						style={tw`border-b border-gray-300 mb-2 p-2 py-4 text-center text-xl font-semibold`}
-					>
-						Add Friend
+					<Text style={tw`mb-2 p-2 py-4 text-center text-xl font-semibold`}>
+						Edit Name
 					</Text>
 					<TextInput
 						style={tw`border border-gray-400 rounded p-2 m-2 mx-4`}
-						ref={ref1}
-						placeholder="Friend's Email-Id"
-						keyboardType='email-address'
-						textContentType='emailAddress'
-						returnKeyType='next'
-						value={id}
-						onChangeText={(text) => setId(text)}
-						onSubmitEditing={() => {
-							ref2.current.focus();
-						}}
-						blurOnSubmit={false}
-					/>
-					<TextInput
-						style={tw`border border-gray-400 rounded p-2 m-2 mx-4`}
-						ref={ref2}
-						placeholder="Friend's Name"
-						textContentType='name'
+						autoFocus={true}
+						placeholder='Name'
+						keyboardType='default'
 						returnKeyType='send'
 						value={name}
 						onChangeText={(text) => setName(text)}
 						onSubmitEditing={submitHandler}
+						blurOnSubmit={false}
 					/>
-					<View style={tw`mx-4 my-2 mb-4`}>
+					<View style={tw`mx-4 my-2`}>
 						<Button
 							onPress={submitHandler}
 							title='Submit'
 							containerStyle={tw`border border-gray-400 rounded-full`}
 							type='clear'
-							loading={loading}
+                            loading={loading}
 						/>
 					</View>
 				</TouchableOpacity>
@@ -94,4 +78,4 @@ const AddCustomerModal = ({ visible, setVisible, fun, loading }) => {
 	);
 };
 
-export default AddCustomerModal;
+export default EditCustomerModal;

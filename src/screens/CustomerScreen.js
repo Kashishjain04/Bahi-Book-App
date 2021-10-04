@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, SafeAreaView, FlatList } from 'react-native';
+import { View, SafeAreaView, FlatList, Text, Alert } from 'react-native';
 import { useSelector } from 'react-redux';
 import { selectUser } from '../redux/slices/userSlice';
 import Dashboard from '../components/Dashboard';
@@ -12,45 +12,66 @@ import AddButton from '../components/AddButton';
 import AddTransactionModal from '../components/AddTransactionModal';
 import { API_BASE_URL } from '@env';
 import { io } from 'socket.io-client';
+import { Icon } from 'react-native-elements';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import EditCustomerModal from '../components/EditCustomerModal';
 
 const CustomerScreen = ({ route }) => {
 	const { customerId, customerName } = route?.params,
-		navigation = useNavigation(),
+	[custName, setCustName] = useState(customerName),
+	 navigation = useNavigation(),
 		user = useSelector(selectUser),
 		[trans, setTrans] = useState([]),
 		[gave, setGave] = useState(0),
 		[got, setGot] = useState(0),
 		[loading, setLoading] = useState(true),
-		[modalVisible, setModalVisible] = useState(false),
+		[editModal, setEditModal] = useState(false);
+
+	// For Add Transaction Modal
+	const [modalVisible, setModalVisible] = useState(false),
 		[transDesc, setTransDesc] = useState(0),
-		[transAmount, setTransAmount] = useState(0);
+		[transAmount, setTransAmount] = useState(''),
+		[settling, setSettling] = useState(0);
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
 			headerShown: true,
-			title: customerName || 'Name',
+			title: custName || 'Name',
 			headerStyle: [tw`bg-red-800`, { elevation: 10 }],
 			headerLeft: () => (
 				<View style={tw`bg-gray-500 shadow-md ml-4 rounded-full`}>
 					<Avatar
 						rounded
-						title={customerName?.[0]?.toUpperCase() || 'N'}
+						title={custName?.[0]?.toUpperCase() || 'N'}
 						size={35}
 						titleStyle={tw`text-white`}
 					/>
 				</View>
 			),
+			headerRight: () => (
+				<TouchableOpacity
+					onPress={() => setEditModal(true)}
+					activeOpacity={0.5}
+					style={tw`mr-4`}
+				>
+					<Icon type='material' name='edit' size={25} color='#fff' />
+				</TouchableOpacity>
+			),
 		});
-	}, [customerId]);
+	}, [customerId, custName]);	
 
-	useEffect(() => {
+	const fetchTransactions = () => {
 		const socket = io(API_BASE_URL);
 
 		// socket.emit("custDoc", {user, custId: customerId}, (err) => console.log(err));
 		socket.emit('transactionsCol', { user, custId: customerId }, (err) =>
 			console.log(err)
 		);
+		return socket;
+	};
 
+	useEffect(() => {
+		const socket = fetchTransactions();
 		// socket.on("custDoc", ({data}) => {
 		//   if (data) {
 		//     setName(data?.name);
@@ -115,19 +136,58 @@ const CustomerScreen = ({ route }) => {
 			});
 	};
 
+	const editCustomerHandler = (name) => {
+		setLoading(true);
+		if(name === custName) {
+			setLoading(false);
+			return Alert.alert('No changes made');
+		}
+		fetch(`${API_BASE_URL}/api/editCustomer`, {
+			method: 'POST',
+			body: JSON.stringify({
+				user,
+				name,
+				custId: customerId
+			}),
+			crossDomain: true,
+			headers: { 'Content-Type': 'application/json' },
+		}).then((res) => res.json()).then((res) => {
+			if (res.error) {
+				Alert.alert(res.error || 'Something went wrong');
+			} else {
+				setCustName(name);
+				setEditModal(false);
+			}
+		}).catch((err) => console.log(err)).finally(() => {
+			setLoading(false);
+		})
+	}
+
 	return (
 		<SafeAreaView style={tw`h-full`}>
 			{loading && <Loader />}
+			{editModal && (
+				<EditCustomerModal
+					visible={editModal}
+					setVisible={setEditModal}
+					loading={loading}
+					setLoading={setLoading}
+					fun={editCustomerHandler}
+				/>
+			)}
 			{modalVisible && (
 				<AddTransactionModal
 					fun={addTransaction}
 					visible={modalVisible}
 					setVisible={setModalVisible}
+					loading={loading}
 					setLoading={setLoading}
 					amt={transAmount}
 					setAmt={setTransAmount}
 					desc={transDesc}
 					setDesc={setTransDesc}
+					settling={settling}
+					setSettling={setSettling}
 				/>
 			)}
 			<FAB
@@ -138,6 +198,17 @@ const CustomerScreen = ({ route }) => {
 				placement='right'
 			/>
 			<FlatList
+				ListEmptyComponent={() => (
+					<View style={tw`flex flex-col h-64 justify-center`}>
+						<Text style={tw`text-gray-500 text-center text-2xl mb-3`}>
+							You don't have any transaction with {custName}
+						</Text>
+						<Text style={tw`text-gray-500 text-center text-2xl`}>
+							Press <Text style={tw`text-red-700`}>Add Transaction</Text> to add
+							one
+						</Text>
+					</View>
+				)}
 				ListHeaderComponent={() => (
 					<View>
 						<Dashboard data={{ sent: gave || 0, received: got || 0 }} />
@@ -146,10 +217,9 @@ const CustomerScreen = ({ route }) => {
 								text='Settle Up'
 								onPress={() => {
 									setTransAmount(Math.abs(gave - got));
-									setTransDesc(
-										`${gave > got ? 'Gave' : 'Got'}: ₹${Math.abs(gave - got)}`
-									);
+									setTransDesc('Automatic Settlement');
 									setModalVisible(true);
+									setSettling(gave > got ? 1 : 2);
 								}}
 							/>
 						)}
@@ -161,7 +231,7 @@ const CustomerScreen = ({ route }) => {
 				)}
 				showsVerticalScrollIndicator={false}
 				data={trans}
-				keyExtractor={(_, index) => index.toString()}
+				keyExtractor={(trans) => trans.id}
 				renderItem={({ item }) => <TransactionListItem trans={item} />}
 			/>
 		</SafeAreaView>

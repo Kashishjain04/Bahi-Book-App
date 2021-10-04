@@ -4,11 +4,11 @@ import {
 	Text,
 	Modal,
 	TextInput,
-	Button,
+	// Button,
 	Alert,
 	TouchableOpacity,
 } from 'react-native';
-import { Icon } from 'react-native-elements';
+import { Icon, Button } from 'react-native-elements';
 import tw from 'tailwind-react-native-classnames';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -16,11 +16,14 @@ const AddTransactionModal = ({
 	visible,
 	setVisible,
 	fun,
+	loading,
 	setLoading,
 	amt,
 	setAmt,
 	desc,
 	setDesc,
+	settling,
+	setSettling,
 }) => {
 	const ref1 = useRef(null),
 		ref2 = useRef(null),
@@ -66,6 +69,7 @@ const AddTransactionModal = ({
 			onRequestClose={() => {
 				setAmt(null);
 				setDesc('');
+				setSettling(0);
 				setVisible(false);
 			}}
 		>
@@ -74,6 +78,7 @@ const AddTransactionModal = ({
 				onPress={() => {
 					setAmt(null);
 					setDesc('');
+					setSettling(0);
 					setVisible(false);
 				}}
 				style={[
@@ -89,10 +94,11 @@ const AddTransactionModal = ({
 					<TouchableOpacity
 						style={tw`absolute right-4 top-4 z-10`}
 						onPress={() => {
-              setAmt(null);
-              setDesc('');
-              setVisible(false);
-            }}
+							setAmt(null);
+							setDesc('');
+							setSettling(0);
+							setVisible(false);
+						}}
 					>
 						<Text style={tw`text-black`}>
 							<Icon type='feather' name='x' />
@@ -124,23 +130,48 @@ const AddTransactionModal = ({
 						onChangeText={(text) => setDesc(text)}
 					/>
 					<View style={tw`mx-4 my-2`}>
-						<Button onPress={pickImage} title='Add Receipt' />
+						<Button
+							onPress={pickImage}
+							title='Add Receipt'
+							containerStyle={tw`rounded-full`}
+						/>
 					</View>
 					<View style={tw`flex-row items-center mx-2 mb-2`}>
-						<View style={tw`p-2 w-1/2`}>
-							<Button
-								color='rgb(185,28,28)'
-								onPress={() => submitHandler(true)}
-								title='You Gave'
-							/>
-						</View>
-						<View style={tw`p-2 w-1/2`}>
-							<Button
-								color='rgb(4,120,87)'
-								onPress={() => submitHandler(false)}
-								title='You Got'
-							/>
-						</View>
+						{settling > 0 ? (
+							<View style={tw`p-2 w-full`}>
+								<Button
+									loading={loading}
+									onPress={() => submitHandler(settling === 2)}
+									title='Settle Up'
+									titleStyle={tw`text-green-700`}
+									containerStyle={tw`border border-gray-400 rounded-full`}
+									type='clear'
+								/>
+							</View>
+						) : (
+							<>
+								<View style={tw`p-2 w-1/2`}>
+									<Button
+										loading={loading}
+										onPress={() => submitHandler(true)}
+										title='You Gave'
+										titleStyle={tw`text-red-700`}
+										containerStyle={tw`border border-gray-400 rounded-full`}
+										type='clear'
+									/>
+								</View>
+								<View style={tw`p-2 w-1/2`}>
+									<Button
+										loading={loading}
+										onPress={() => submitHandler(false)}
+										title='You Got'
+										titleStyle={tw`text-green-700`}
+										containerStyle={tw`border border-gray-400 rounded-full`}
+										type='clear'
+									/>
+								</View>
+							</>
+						)}
 					</View>
 				</TouchableOpacity>
 			</TouchableOpacity>
