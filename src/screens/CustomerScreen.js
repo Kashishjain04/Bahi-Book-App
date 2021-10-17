@@ -1,25 +1,23 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, SafeAreaView, FlatList, Text, Alert } from 'react-native';
-import { useSelector } from 'react-redux';
-import { selectUser } from '../redux/slices/userSlice';
-import Dashboard from '../components/Dashboard';
-import { useNavigation } from '@react-navigation/native';
-import { Avatar, FAB } from 'react-native-elements';
-import tw from 'tailwind-react-native-classnames';
-import TransactionListItem from '../components/TransactionListItem';
-import Loader from '../components/Loader';
-import AddButton from '../components/AddButton';
-import AddTransactionModal from '../components/AddTransactionModal';
-import { API_BASE_URL } from '@env';
-import { io } from 'socket.io-client';
-import { Icon } from 'react-native-elements';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import EditCustomerModal from '../components/EditCustomerModal';
+import React, { useEffect, useLayoutEffect, useState } from "react";
+import { View, SafeAreaView, Alert } from "react-native";
+import { useSelector } from "react-redux";
+import { selectUser } from "../redux/slices/userSlice";
+import { useNavigation } from "@react-navigation/native";
+import { Avatar, FAB } from "react-native-elements";
+import tw from "tailwind-react-native-classnames";
+import Loader from "../components/Loader";
+import AddTransactionModal from "../components/AddTransactionModal";
+import { API_BASE_URL } from "@env";
+import { io } from "socket.io-client";
+import { Icon } from "react-native-elements";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import EditCustomerModal from "../components/EditCustomerModal";
+import TransactionsList from "../components/TransactionsList";
 
 const CustomerScreen = ({ route }) => {
 	const { customerId, customerName } = route?.params,
-	[custName, setCustName] = useState(customerName),
-	 navigation = useNavigation(),
+		[custName, setCustName] = useState(customerName),
+		navigation = useNavigation(),
 		user = useSelector(selectUser),
 		[trans, setTrans] = useState([]),
 		[gave, setGave] = useState(0),
@@ -29,20 +27,20 @@ const CustomerScreen = ({ route }) => {
 
 	// For Add Transaction Modal
 	const [modalVisible, setModalVisible] = useState(false),
-		[transDesc, setTransDesc] = useState(0),
-		[transAmount, setTransAmount] = useState(''),
+		[transDesc, setTransDesc] = useState(""),
+		[transAmount, setTransAmount] = useState(""),
 		[settling, setSettling] = useState(0);
 
 	useLayoutEffect(() => {
 		navigation.setOptions({
 			headerShown: true,
-			title: custName || 'Name',
+			title: custName || "Name",
 			headerStyle: [tw`bg-red-800`, { elevation: 10 }],
 			headerLeft: () => (
 				<View style={tw`bg-gray-500 shadow-md ml-4 rounded-full`}>
 					<Avatar
 						rounded
-						title={custName?.[0]?.toUpperCase() || 'N'}
+						title={custName?.[0]?.toUpperCase() || "N"}
 						size={35}
 						titleStyle={tw`text-white`}
 					/>
@@ -54,17 +52,17 @@ const CustomerScreen = ({ route }) => {
 					activeOpacity={0.5}
 					style={tw`mr-4`}
 				>
-					<Icon type='material' name='edit' size={25} color='#fff' />
+					<Icon type="material" name="edit" size={25} color="#fff" />
 				</TouchableOpacity>
 			),
 		});
-	}, [customerId, custName]);	
+	}, [customerId, custName]);
 
 	const fetchTransactions = () => {
 		const socket = io(API_BASE_URL);
 
 		// socket.emit("custDoc", {user, custId: customerId}, (err) => console.log(err));
-		socket.emit('transactionsCol', { user, custId: customerId }, (err) =>
+		socket.emit("transactionsCol", { user, custId: customerId }, (err) =>
 			console.log(err)
 		);
 		return socket;
@@ -80,7 +78,7 @@ const CustomerScreen = ({ route }) => {
 		//   }
 		// })
 
-		socket.on('transactionsCol', ({ data }) => {
+		socket.on("transactionsCol", ({ data }) => {
 			setLoading(true);
 			setTrans(data?.transactions || []);
 			setGot(data?.received || 0);
@@ -106,10 +104,10 @@ const CustomerScreen = ({ route }) => {
 		setGot(tGot);
 	}, [trans]);
 
-	const addTransaction = (isGiving, amount, desc, url = '') => {
+	const addTransaction = (isGiving, amount, desc, url = "") => {
 		setLoading(true);
 		fetch(`${API_BASE_URL}/api/addTransaction`, {
-			method: 'POST',
+			method: "POST",
 			body: JSON.stringify({
 				user,
 				customerId,
@@ -119,49 +117,54 @@ const CustomerScreen = ({ route }) => {
 				isGiving,
 			}),
 			crossDomain: true,
-			headers: { 'Content-Type': 'application/json' },
+			headers: { "Content-Type": "application/json" },
 		})
 			.then((res) => res.json())
 			.then((res) => {
 				if (res.error) {
-					Alert.alert(res.error || 'Something went wrong');
-				} else {
-					Alert.alert('Transaction added successfully');
+					Alert.alert(res.error || "Something went wrong");
 				}
 			})
 			.catch((err) => console.log(err))
 			.finally(() => {
 				setModalVisible(false);
+				setTransAmount("");
+				setTransDesc("");
+				setSettling(0);
 				setLoading(false);
 			});
 	};
 
 	const editCustomerHandler = (name) => {
 		setLoading(true);
-		if(name === custName) {
+		if (name === custName) {
 			setLoading(false);
-			return Alert.alert('No changes made');
+			return Alert.alert("No changes made");
 		}
 		fetch(`${API_BASE_URL}/api/editCustomer`, {
-			method: 'POST',
+			method: "POST",
 			body: JSON.stringify({
 				user,
 				name,
-				custId: customerId
+				custId: customerId,
 			}),
 			crossDomain: true,
-			headers: { 'Content-Type': 'application/json' },
-		}).then((res) => res.json()).then((res) => {
-			if (res.error) {
-				Alert.alert(res.error || 'Something went wrong');
-			} else {
-				setCustName(name);
-				setEditModal(false);
-			}
-		}).catch((err) => console.log(err)).finally(() => {
-			setLoading(false);
+			headers: { "Content-Type": "application/json" },
 		})
-	}
+			.then((res) => res.json())
+			.then((res) => {
+				if (res.error) {
+					Alert.alert(res.error || "Something went wrong");
+				} else {
+					setCustName(name);
+					setEditModal(false);
+				}
+			})
+			.catch((err) => console.log(err))
+			.finally(() => {
+				setLoading(false);
+			});
+	};
 
 	return (
 		<SafeAreaView style={tw`h-full`}>
@@ -192,47 +195,22 @@ const CustomerScreen = ({ route }) => {
 			)}
 			<FAB
 				onPress={() => setModalVisible(true)}
-				title='Add Transaction'
-				color='rgb(153,27,27)'
+				title="Add Transaction"
+				color="rgb(153,27,27)"
 				style={tw`z-10`}
-				placement='right'
+				placement="right"
 			/>
-			<FlatList
-				ListEmptyComponent={() => (
-					<View style={tw`flex flex-col h-64 justify-center`}>
-						<Text style={tw`text-gray-500 text-center text-2xl mb-3`}>
-							You don't have any transaction with {custName}
-						</Text>
-						<Text style={tw`text-gray-500 text-center text-2xl`}>
-							Press <Text style={tw`text-red-700`}>Add Transaction</Text> to add
-							one
-						</Text>
-					</View>
-				)}
-				ListHeaderComponent={() => (
-					<View>
-						<Dashboard data={{ sent: gave || 0, received: got || 0 }} />
-						{gave !== got && (
-							<AddButton
-								text='Settle Up'
-								onPress={() => {
-									setTransAmount(Math.abs(gave - got));
-									setTransDesc('Automatic Settlement');
-									setModalVisible(true);
-									setSettling(gave > got ? 1 : 2);
-								}}
-							/>
-						)}
-					</View>
-				)}
-				ListHeaderComponentStyle={tw`mb-4`}
-				ItemSeparatorComponent={() => (
-					<View style={[tw`w-full bg-gray-300`, { height: 1 }]}></View>
-				)}
-				showsVerticalScrollIndicator={false}
-				data={trans}
-				keyExtractor={(trans) => trans.id}
-				renderItem={({ item }) => <TransactionListItem trans={item} />}
+			<TransactionsList
+				trans={trans}
+				gave={gave}
+				got={got}
+				custId={customerId}
+				custName={custName}
+				setLoading={setLoading}
+				setModalVisible={setModalVisible}
+				setTransAmount={setTransAmount}
+				setTransDesc={setTransDesc}
+				setSettling={setSettling}
 			/>
 		</SafeAreaView>
 	);

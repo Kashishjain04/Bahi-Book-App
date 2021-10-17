@@ -38,13 +38,6 @@ const AuthScreen = () => {
 								headers: { 'Content-Type': 'application/json' },
 								crossDomain: true,
 							}).catch((err) => console.log(err));
-						} else {
-							fetch(`${API_BASE_URL}/api/updateUser`, {
-								method: 'POST',
-								body: JSON.stringify({user: additionalUserInfo?.profile}),
-								headers: { 'Content-Type': 'application/json' },
-								crossDomain: true,
-							}).catch((err) => console.log(err));
 						}
 					})
 					.catch((err) => console.log(err))

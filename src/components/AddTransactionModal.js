@@ -40,6 +40,7 @@ const AddTransactionModal = ({
 		if (!amt || !desc) {
 			return Alert.alert('All the fields are required');
 		}
+		if(isNaN(amt)) return Alert.alert('Amount should be a number');
 		if (amt < 1) {
 			return Alert.alert('Amount must be grater than 0');
 		}
@@ -116,7 +117,7 @@ const AddTransactionModal = ({
 						keyboardType='numeric'
 						returnKeyType='next'
 						value={amt?.toString() || ''}
-						onChangeText={(text) => setAmt(Number(text))}
+						onChangeText={(text) => setAmt(text)}
 						onSubmitEditing={() => {
 							ref2.current.focus();
 						}}

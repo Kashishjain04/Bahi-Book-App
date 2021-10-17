@@ -11,6 +11,7 @@ import Loader from '../components/Loader';
 import { selectUser } from '../redux/slices/userSlice';
 import { API_BASE_URL } from '@env';
 import { io } from 'socket.io-client';
+import { registerForPushNotificationsAsync } from '../utils/notifications';
 
 const HomeScreen = () => {
 	const user = useSelector(selectUser),
@@ -18,7 +19,23 @@ const HomeScreen = () => {
 		[customers, setCustomers] = useState([]),
 		[loading, setLoading] = useState(false),
 		[listLoading, setListLoading] = useState(true),
-		[modalVisible, setModalVisible] = useState(false);
+		[modalVisible, setModalVisible] = useState(false);		
+
+	// push notifications
+	useEffect(() => {
+		registerForPushNotificationsAsync()
+			.then((res) => {
+				if (res.status === 200) {
+					fetch(`${API_BASE_URL}/api/updateUser`, {
+						method: 'POST',
+						body: JSON.stringify({ user: { ...user, tokenType: 'expoPushToken', token: res.token } }),
+						headers: { 'Content-Type': 'application/json' },
+						crossDomain: true,
+					}).catch((err) => console.log(err));
+				} else console.log(res.message);
+			})
+			.catch((err) => console.log(err));		
+	}, []);
 
 	const loadData = () => {
 		const socket = io(API_BASE_URL);
