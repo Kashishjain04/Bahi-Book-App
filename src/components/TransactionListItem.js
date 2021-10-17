@@ -12,7 +12,7 @@ const TransactionListItem = ({ trans }) => {
 	const navigation = useNavigation(),
 		user = useSelector(selectUser);    
 	return (
-		<View style={tw`flex-row items-center p-2 py-4 my-1 bg-gray-100`}>
+		<View style={tw`flex-row items-center p-2 py-4 my-1 bg-white`}>
 			<Text style={tw`absolute top-0 left-2 text-sm text-gray-400`}>
 				{moment(trans?.timestamp?._seconds * 1000)?.format("DD/M/YY, h:mm A")}
 			</Text>

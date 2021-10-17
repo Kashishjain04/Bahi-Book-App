@@ -9,6 +9,7 @@ import TransactionListItem from "../components/TransactionListItem";
 import AddButton from "../components/AddButton";
 import { API_BASE_URL } from "@env";
 import { SwipeListView } from "react-native-swipe-list-view";
+import { Platform } from "react-native";
 
 const TransactionsList = ({
 	trans,
@@ -17,10 +18,10 @@ const TransactionsList = ({
 	custId,
 	custName,
 	setLoading,
-    setModalVisible,
-    setTransAmount,
-    setTransDesc,
-    setSettling
+	setModalVisible,
+	setTransAmount,
+	setTransDesc,
+	setSettling,
 }) => {
 	const user = useSelector(selectUser);
 
@@ -46,12 +47,12 @@ const TransactionsList = ({
 				}
 			})
 			.catch((err) => {
-                Alert.alert(err.message || "Something went wrong");
-            })
+				Alert.alert(err.message || "Something went wrong");
+			})
 			.finally(() => {
 				setLoading(false);
 			});
-	};    
+	};
 
 	return (
 		<SwipeListView
@@ -105,7 +106,9 @@ const TransactionsList = ({
 			ItemSeparatorComponent={() => (
 				<View style={[tw`w-full bg-gray-300`, { height: 1 }]}></View>
 			)}
+			ListFooterComponent={() => <View />}
 			showsVerticalScrollIndicator={false}
+			ListFooterComponentStyle={Platform.OS === "ios" ? tw`my-7` : tw`my-9`}
 			data={trans}
 			keyExtractor={(trans) => trans.id}
 			renderItem={({ item }) => <TransactionListItem trans={item} />}

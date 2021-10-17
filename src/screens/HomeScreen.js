@@ -1,17 +1,17 @@
-import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, FlatList, View, Text, Alert } from 'react-native';
-import { FAB } from 'react-native-elements';
-import { useSelector } from 'react-redux';
-import tw from 'tailwind-react-native-classnames';
-import AddCustomerModal from '../components/AddCustomerModal';
-import CustomerListItem from '../components/CustomerListItem';
-import Dashboard from '../components/Dashboard';
-import Loader from '../components/Loader';
-import { selectUser } from '../redux/slices/userSlice';
-import { API_BASE_URL } from '@env';
-import { io } from 'socket.io-client';
-import { registerForPushNotificationsAsync } from '../utils/notifications';
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect, useState } from "react";
+import { SafeAreaView, FlatList, View, Text, Alert, Platform } from "react-native";
+import { FAB } from "react-native-elements";
+import { useSelector } from "react-redux";
+import tw from "tailwind-react-native-classnames";
+import AddCustomerModal from "../components/AddCustomerModal";
+import CustomerListItem from "../components/CustomerListItem";
+import Dashboard from "../components/Dashboard";
+import Loader from "../components/Loader";
+import { selectUser } from "../redux/slices/userSlice";
+import { API_BASE_URL } from "@env";
+import { io } from "socket.io-client";
+import { registerForPushNotificationsAsync } from "../utils/notifications";
 
 const HomeScreen = () => {
 	const user = useSelector(selectUser),
@@ -19,7 +19,7 @@ const HomeScreen = () => {
 		[customers, setCustomers] = useState([]),
 		[loading, setLoading] = useState(false),
 		[listLoading, setListLoading] = useState(true),
-		[modalVisible, setModalVisible] = useState(false);		
+		[modalVisible, setModalVisible] = useState(false);
 
 	// push notifications
 	useEffect(() => {
@@ -27,33 +27,35 @@ const HomeScreen = () => {
 			.then((res) => {
 				if (res.status === 200) {
 					fetch(`${API_BASE_URL}/api/updateUser`, {
-						method: 'POST',
-						body: JSON.stringify({ user: { ...user, tokenType: 'expoPushToken', token: res.token } }),
-						headers: { 'Content-Type': 'application/json' },
+						method: "POST",
+						body: JSON.stringify({
+							user: { ...user, tokenType: "expoPushToken", token: res.token },
+						}),
+						headers: { "Content-Type": "application/json" },
 						crossDomain: true,
 					}).catch((err) => console.log(err));
 				} else console.log(res.message);
 			})
-			.catch((err) => console.log(err));		
+			.catch((err) => console.log(err));
 	}, []);
 
 	const loadData = () => {
 		const socket = io(API_BASE_URL);
 
-		socket.emit('userDoc', { user }, (err) => {
+		socket.emit("userDoc", { user }, (err) => {
 			console.log(err);
 		});
-		socket.emit('customersCol', { user }, (err) => {
+		socket.emit("customersCol", { user }, (err) => {
 			console.log(err);
 		});
 
-		socket.on('userDoc', ({ data }) => {
+		socket.on("userDoc", ({ data }) => {
 			setLoading(true);
 			setUserDoc(data);
 			setLoading(false);
 			setListLoading(false);
 		});
-		socket.on('customersCol', ({ data }) => {
+		socket.on("customersCol", ({ data }) => {
 			setLoading(true);
 			setCustomers(data);
 			setLoading(false);
@@ -82,24 +84,24 @@ const HomeScreen = () => {
 				return;
 			}
 			fetch(`${API_BASE_URL}/api/addCustomer`, {
-				method: 'POST',
+				method: "POST",
 				body: JSON.stringify({
 					user,
 					id,
 					name,
 				}),
 				headers: {
-					Accept: 'application/json',
-					'Content-Type': 'application/json',
+					Accept: "application/json",
+					"Content-Type": "application/json",
 				},
 				crossDomain: true,
 			})
 				.then((res) => res.json())
 				.then((res) => {
 					if (res.error) {
-						Alert.alert(res.error || 'Something went wrong');
+						Alert.alert(res.error || "Something went wrong");
 					} else {
-						Alert.alert('Friend added successfully');
+						Alert.alert("Friend added successfully");
 					}
 				})
 				.catch((err) => {
@@ -113,7 +115,7 @@ const HomeScreen = () => {
 	};
 
 	return (
-		<SafeAreaView style={tw`flex-grow h-full`}>
+		<SafeAreaView style={tw`flex-grow h-full bg-white`}>
 			{loading && <Loader />}
 			{modalVisible && (
 				<AddCustomerModal
@@ -123,13 +125,13 @@ const HomeScreen = () => {
 					setVisible={setModalVisible}
 				/>
 			)}
-			<StatusBar style='light' />
+			<StatusBar style="light" />
 			<FAB
 				onPress={() => setModalVisible(true)}
-				title='Add Friend'
-				color='rgb(153,27,27)'
+				title="Add Friend"
+				color="rgb(153,27,27)"
 				style={tw`z-10`}
-				placement='right'
+				placement="right"
 			/>
 			<FlatList
 				refreshing={listLoading}
@@ -160,9 +162,11 @@ const HomeScreen = () => {
 				ItemSeparatorComponent={() => (
 					<View style={[tw`w-full bg-gray-300`, { height: 1 }]} />
 				)}
-				overScrollMode='never'
+				ListFooterComponent={() => <View />}
+				overScrollMode="never"
 				ListHeaderComponentStyle={tw`mb-2`}
 				showsVerticalScrollIndicator={false}
+				ListFooterComponentStyle={Platform.OS === "ios" ? tw`my-7` : tw`my-9`}
 				data={customers}
 				keyExtractor={(_, index) => index.toLocaleString()}
 				renderItem={({ item }) => <CustomerListItem customer={item} />}

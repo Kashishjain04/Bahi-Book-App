@@ -167,7 +167,7 @@ const CustomerScreen = ({ route }) => {
 	};
 
 	return (
-		<SafeAreaView style={tw`h-full`}>
+		<SafeAreaView style={tw`h-full bg-white`}>
 			{loading && <Loader />}
 			{editModal && (
 				<EditCustomerModal
