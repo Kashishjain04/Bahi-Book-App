@@ -104,7 +104,7 @@ const CustomerScreen = ({ route }) => {
 		setGot(tGot);
 	}, [trans]);
 
-	const addTransaction = (isGiving, amount, desc, url = "") => {
+	const addTransaction = (isGiving, amount, desc, url = "", fileType = "") => {
 		setLoading(true);
 		fetch(`${API_BASE_URL}/api/addTransaction`, {
 			method: "POST",
@@ -114,6 +114,7 @@ const CustomerScreen = ({ route }) => {
 				amount,
 				desc,
 				url,
+				fileType,
 				isGiving,
 			}),
 			crossDomain: true,

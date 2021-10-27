@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import {
 	View,
 	Text,
@@ -7,10 +7,10 @@ import {
 	// Button,
 	Alert,
 	TouchableOpacity,
-} from 'react-native';
-import { Icon, Button } from 'react-native-elements';
-import tw from 'tailwind-react-native-classnames';
-import * as ImagePicker from 'expo-image-picker';
+} from "react-native";
+import { Icon, Button } from "react-native-elements";
+import tw from "tailwind-react-native-classnames";
+import * as ImagePicker from "expo-image-picker";
 
 const AddTransactionModal = ({
 	visible,
@@ -29,7 +29,8 @@ const AddTransactionModal = ({
 		ref2 = useRef(null),
 		// [desc, setDesc] = useState(""),
 		// [amt, setAmt] = useState(null),
-		[image, setImage] = useState('');
+		[fileType, setFileType] = useState(""),
+		[image, setImage] = useState("");
 
 	useEffect(() => {
 		setLoading(true);
@@ -38,20 +39,20 @@ const AddTransactionModal = ({
 
 	const submitHandler = (isGiving) => {
 		if (!amt || !desc) {
-			return Alert.alert('All the fields are required');
+			return Alert.alert("All the fields are required");
 		}
-		if(isNaN(amt)) return Alert.alert('Amount should be a number');
+		if (isNaN(amt)) return Alert.alert("Amount should be a number");
 		if (amt < 1) {
-			return Alert.alert('Amount must be grater than 0');
+			return Alert.alert("Amount must be grater than 0");
 		}
-		fun(isGiving, Number(amt), desc, image);
+		fun(isGiving, Number(amt), desc, image, fileType);
 	};
 
 	const pickImage = async () => {
 		const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
 		if (!permission.granted) {
-			return Alert.alert('Permission to access camera roll is required');
+			return Alert.alert("Permission to access camera roll is required");
 		}
 		const res = await ImagePicker.launchImageLibraryAsync({
 			base64: true,
@@ -59,17 +60,23 @@ const AddTransactionModal = ({
 			allowsEditing: true,
 			mediaTypes: ImagePicker.MediaTypeOptions.Images,
 		});
-		setImage('data:image/jpg;base64,' + res?.base64 || null);
+		if (res.cancelled) {
+			setFileType("");
+			setImage("");
+		}else{
+			setFileType(res?.uri?.split(".")[res?.uri?.split(".").length - 1]);
+			setImage("data:image/jpg;base64," + res?.base64 || null);
+		}
 	};
 
 	return (
 		<Modal
-			animationType='fade'
+			animationType="fade"
 			transparent={true}
 			visible={visible}
 			onRequestClose={() => {
 				setAmt(null);
-				setDesc('');
+				setDesc("");
 				setSettling(0);
 				setVisible(false);
 			}}
@@ -78,13 +85,13 @@ const AddTransactionModal = ({
 				activeOpacity={1}
 				onPress={() => {
 					setAmt(null);
-					setDesc('');
+					setDesc("");
 					setSettling(0);
 					setVisible(false);
 				}}
 				style={[
 					tw`h-full w-full absolute justify-center items-center`,
-					{ backgroundColor: 'rgba(0,0,0,0.6)' },
+					{ backgroundColor: "rgba(0,0,0,0.6)" },
 				]}
 			>
 				<TouchableOpacity
@@ -96,13 +103,13 @@ const AddTransactionModal = ({
 						style={tw`absolute right-4 top-4 z-10`}
 						onPress={() => {
 							setAmt(null);
-							setDesc('');
+							setDesc("");
 							setSettling(0);
 							setVisible(false);
 						}}
 					>
 						<Text style={tw`text-black`}>
-							<Icon type='feather' name='x' />
+							<Icon type="feather" name="x" />
 						</Text>
 					</TouchableOpacity>
 					<Text
@@ -113,10 +120,10 @@ const AddTransactionModal = ({
 					<TextInput
 						style={tw`border border-gray-400 rounded p-2 m-2 mx-4`}
 						ref={ref1}
-						placeholder='Amount'
-						keyboardType='numeric'
-						returnKeyType='next'
-						value={amt?.toString() || ''}
+						placeholder="Amount"
+						keyboardType="numeric"
+						returnKeyType="next"
+						value={amt?.toString() || ""}
 						onChangeText={(text) => setAmt(text)}
 						onSubmitEditing={() => {
 							ref2.current.focus();
@@ -126,14 +133,14 @@ const AddTransactionModal = ({
 					<TextInput
 						style={tw`border border-gray-400 rounded p-2 m-2 mx-4`}
 						ref={ref2}
-						placeholder='Description'
+						placeholder="Description"
 						value={desc}
 						onChangeText={(text) => setDesc(text)}
 					/>
 					<View style={tw`mx-4 my-2`}>
 						<Button
 							onPress={pickImage}
-							title='Add Receipt'
+							title="Add Receipt"
 							containerStyle={tw`rounded-full`}
 						/>
 					</View>
@@ -143,10 +150,10 @@ const AddTransactionModal = ({
 								<Button
 									loading={loading}
 									onPress={() => submitHandler(settling === 2)}
-									title='Settle Up'
+									title="Settle Up"
 									titleStyle={tw`text-green-700`}
 									containerStyle={tw`border border-gray-400 rounded-full`}
-									type='clear'
+									type="clear"
 								/>
 							</View>
 						) : (
@@ -155,20 +162,20 @@ const AddTransactionModal = ({
 									<Button
 										loading={loading}
 										onPress={() => submitHandler(true)}
-										title='You Gave'
+										title="You Gave"
 										titleStyle={tw`text-red-700`}
 										containerStyle={tw`border border-gray-400 rounded-full`}
-										type='clear'
+										type="clear"
 									/>
 								</View>
 								<View style={tw`p-2 w-1/2`}>
 									<Button
 										loading={loading}
 										onPress={() => submitHandler(false)}
-										title='You Got'
+										title="You Got"
 										titleStyle={tw`text-green-700`}
 										containerStyle={tw`border border-gray-400 rounded-full`}
-										type='clear'
+										type="clear"
 									/>
 								</View>
 							</>
